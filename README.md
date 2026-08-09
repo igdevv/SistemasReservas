@@ -54,3 +54,332 @@ Domain
 Infrastructure
  │
  └── implementa contratos definidos por Application
+```
+
+---
+
+## Domain
+
+`SistemasReservas.Domain`
+
+Es el núcleo del sistema.
+
+Aquí viven las entidades y las reglas principales del negocio.
+
+Actualmente contiene:
+
+- `Reserva`
+- `EstadoReserva`
+
+Ejemplos de reglas de dominio:
+
+- Una reserva no puede terminar antes de comenzar.
+- Toda reserva nueva comienza en estado `Pendiente`.
+- Solo una reserva pendiente puede confirmarse.
+- Una reserva completada no puede cancelarse.
+- Una reserva cancelada no puede volver a confirmarse.
+
+Ejemplo:
+
+```csharp
+reserva.Confirmar();
+```
+
+La propia entidad decide si esa operación está permitida.
+
+---
+
+## Application
+
+`SistemasReservas.Application`
+
+Contiene los casos de uso de la aplicación.
+
+Actualmente se encarga de:
+
+- Crear reservas.
+- Obtener todas las reservas.
+- Obtener una reserva por Id.
+- Confirmar reservas.
+- Verificar si existe solapamiento.
+
+También contiene contratos como:
+
+```csharp
+IReservaRepository
+```
+
+Application define lo que necesita, pero no sabe cómo se accede a SQL Server.
+
+Ejemplo:
+
+```text
+Application:
+"Necesito saber si existe una reserva en este horario."
+
+Infrastructure:
+"Yo sé cómo consultarlo."
+```
+
+---
+
+## Infrastructure
+
+`SistemasReservas.Infrastructure`
+
+Contiene los detalles técnicos.
+
+Actualmente incluye:
+
+- Entity Framework Core.
+- SQL Server.
+- `ApplicationDbContext`.
+- `ReservaRepository`.
+- Persistencia de reservas.
+
+Ejemplo:
+
+```csharp
+public class ReservaRepository : IReservaRepository
+```
+
+Application define el contrato.
+
+Infrastructure implementa ese contrato.
+
+---
+
+## API
+
+`SistemasReservas.API`
+
+Es la entrada HTTP de la aplicación.
+
+Aquí viven:
+
+- Controllers.
+- Configuración de Dependency Injection.
+- Configuración de SQL Server.
+- Swagger.
+
+El Controller recibe peticiones HTTP y delega el trabajo a Application.
+
+---
+
+## Flujo de creación de una reserva
+
+```text
+Cliente
+   │
+   ▼
+POST /api/Reservas
+   │
+   ▼
+ReservasController
+   │
+   ▼
+ReservaService
+   │
+   ▼
+IReservaRepository
+   │
+   ▼
+ReservaRepository
+   │
+   ▼
+SQL Server
+```
+
+Antes de guardar una reserva, Application verifica que no exista otra reserva solapada.
+
+Luego Domain valida que la reserva sea válida.
+
+---
+
+## Estados de una reserva
+
+El sistema utiliza los siguientes estados:
+
+- Pendiente
+- Confirmada
+- Cancelada
+- Completada
+
+Flujo permitido:
+
+```text
+Pendiente
+   ├── Confirmada
+   └── Cancelada
+
+Confirmada
+   ├── Completada
+   └── Cancelada
+
+Cancelada
+   └── Estado final
+
+Completada
+   └── Estado final
+```
+
+---
+
+## Prevención de reservas solapadas
+
+Antes de crear una reserva se verifica si existe otra que choque con el horario solicitado.
+
+La condición utilizada es:
+
+```csharp
+inicio < reserva.FechaFin &&
+fin > reserva.FechaInicio
+```
+
+Ejemplo:
+
+```text
+Reserva existente:
+10:00 -------- 11:00
+
+Nueva reserva:
+       10:30 -------- 11:30
+
+Resultado:
+Solapamiento detectado
+```
+
+---
+
+## DTOs
+
+La API no expone directamente las entidades del dominio.
+
+Actualmente se utilizan:
+
+- `CrearReservaRequest`
+- `ReservaResponse`
+
+Flujo:
+
+```text
+Cliente
+   │
+   ▼
+CrearReservaRequest
+   │
+   ▼
+Application
+   │
+   ▼
+Reserva
+   │
+   ▼
+ReservaResponse
+   │
+   ▼
+Cliente
+```
+
+---
+
+## Endpoints actuales
+
+### Crear reserva
+
+```http
+POST /api/Reservas
+```
+
+Ejemplo:
+
+```json
+{
+  "fechaInicio": "2026-08-10T10:00:00",
+  "fechaFin": "2026-08-10T11:00:00"
+}
+```
+
+### Obtener todas las reservas
+
+```http
+GET /api/Reservas
+```
+
+### Obtener reserva por Id
+
+```http
+GET /api/Reservas/{id}
+```
+
+### Confirmar reserva
+
+```http
+PATCH /api/Reservas/{id}/confirmar
+```
+
+---
+
+## Base de datos
+
+El proyecto utiliza SQL Server mediante Entity Framework Core.
+
+La persistencia se encuentra dentro de:
+
+`SistemasReservas.Infrastructure`
+
+El DbContext principal es:
+
+`ApplicationDbContext`
+
+---
+
+## Próximas funcionalidades
+
+- Cancelar reservas desde la API.
+- Completar reservas.
+- Reglas de horario laboral.
+- Restricciones de cancelación.
+- Manejo global de errores.
+- Problem Details.
+- Validaciones.
+- Concurrencia.
+- Prevención robusta de doble reserva.
+- Transacciones.
+- Background Jobs.
+- Recordatorios automáticos.
+- Envío de correos electrónicos.
+- Autenticación JWT.
+- Roles y autorización.
+- Unit Tests.
+- Integration Tests.
+- Docker.
+- Despliegue en Azure.
+- CI/CD.
+
+---
+
+## Objetivo de aprendizaje
+
+Este proyecto fue creado para practicar backend e ingeniería de software.
+
+Conceptos trabajados:
+
+- Onion Architecture.
+- Dependency Injection.
+- Dependency Inversion.
+- Repository Pattern.
+- Separación de responsabilidades.
+- Domain Logic.
+- Application Services.
+- Entity Framework Core.
+- Manejo de estados.
+- Reglas de negocio.
+- DTOs.
+- SQL Server.
+
+---
+
+## Autor
+
+José Ignacio Suero
