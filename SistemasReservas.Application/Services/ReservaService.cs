@@ -1,4 +1,5 @@
-﻿using SistemasReservas.Application.DTOs;
+﻿using FluentValidation;
+using SistemasReservas.Application.DTOs;
 using SistemasReservas.Application.Interfaces;
 using SistemasReservas.Domain.Entities;
 using System;
@@ -10,14 +11,18 @@ namespace SistemasReservas.Application.Services;
 public class ReservaService
 {
     private readonly IReservaRepository _reservaRepository;
+    private readonly IValidator<CrearReservaRequest> _validator;
 
-    public ReservaService(IReservaRepository reservaRepository)
+    public ReservaService(IReservaRepository reservaRepository, IValidator<CrearReservaRequest> validator)
     {
         _reservaRepository = reservaRepository;
+        _validator = validator;
     }
     
     public async Task<ReservaResponse> CrearReservaAsync(CrearReservaRequest request)
     {
+        await _validator.ValidateAndThrowAsync(request);
+
         var existeSolapamiento = await _reservaRepository.ExisteSolapamientoAsync(request.FechaInicio, request.FechaFin);
 
         if (existeSolapamiento)
@@ -79,6 +84,20 @@ public class ReservaService
         }
 
         reserva.Confirmar();
+
+        await _reservaRepository.GuardarCambiosAsync();
+    }
+
+    public async Task CancelarAsync(int id)
+    {
+        var reserva = await _reservaRepository.ObtenerParaActualizarAsync(id);
+
+        if (reserva == null)
+        {
+            throw new KeyNotFoundException("La reserva no existe.");
+        }
+
+        reserva.Cancelar();
 
         await _reservaRepository.GuardarCambiosAsync();
     }

@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Elementos de la solución/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="SistemasReservas.API/SistemasReservas.API.csproj" />
   <Project Path="SistemasReservas.Application/SistemasReservas.Application.csproj" />
   <Project Path="SistemasReservas.Domain/SistemasReservas.Domain.csproj" />

@@ -12,11 +12,25 @@ public class Reserva
     public DateTime FechaFin { get; set; }
     public EstadoReserva Estado { get; private set; }
 
+
+
     public Reserva(DateTime fechaInicio, DateTime fechaFin)
     {
         if (fechaFin <= fechaInicio)
         {
             throw new ArgumentException("La fecha de fin debe ser mayor que la fecha de inicio.");
+        }
+
+        if (fechaInicio < DateTime.Now)
+        {
+            throw new InvalidOperationException(
+                "No se puede crear una reserva en el pasado.");
+        }
+
+        if (fechaInicio.Hour < 8 || fechaFin.Hour > 18)
+        {
+            throw new InvalidOperationException(
+                "Las reservas solo pueden realizarse entre las 8:00 AM y las 6:00 PM.");
         }
 
         FechaInicio = fechaInicio;
@@ -36,9 +50,19 @@ public class Reserva
 
     public void Cancelar()
     {
+        if (Estado == EstadoReserva.Completada)
+        {
+            throw new InvalidOperationException("Una reserva completada no puede cancelarse.");
+        }
+
         if (Estado == EstadoReserva.Cancelada)
         {
             throw new InvalidOperationException("La reserva ya está cancelada");
+        }
+
+        if (FechaInicio <= DateTime.Now.AddHours(2))
+        {
+            throw new InvalidOperationException("La reserva debe cancelarse con al menos 2 horas de anticipación.");
         }
 
         Estado = EstadoReserva.Cancelada;

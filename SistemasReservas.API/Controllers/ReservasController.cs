@@ -52,6 +52,13 @@ namespace SistemasReservas.API.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{id}/cancelar")]
+        public async Task<IActionResult> Cancelar(int id)
+        {
+            await _reservaService.CancelarAsync(id);
+
+            return NoContent();
+        }
 
     }
 }
