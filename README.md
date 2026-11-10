@@ -287,6 +287,19 @@ Cliente
 
 ---
 
+## Ejecución local
+
+Requiere .NET SDK 10 y SQL Server o LocalDB. Configura `ConnectionStrings__DefaultConnection` mediante variable de entorno o User Secrets, sin publicar credenciales. Desde la raíz del repositorio:
+
+```powershell
+dotnet restore SistemasReservas.slnx
+dotnet build SistemasReservas.slnx
+dotnet ef database update --project SistemasReservas.Infrastructure --startup-project SistemasReservas.API
+dotnet run --project SistemasReservas.API
+```
+
+En `Development`, abre `/swagger` en la dirección local indicada por la aplicación. Revisa las migraciones antes de aplicarlas a una base con datos. El repositorio incluye un workflow de GitHub Actions que compila la solución; todavía no contiene un proyecto de pruebas automatizadas.
+
 ## Endpoints actuales
 
 ### Crear reserva
@@ -294,6 +307,8 @@ Cliente
 ```http
 POST /api/Reservas
 ```
+
+Devuelve **201 Created** y una cabecera `Location` hacia la reserva creada.
 
 Ejemplo:
 
@@ -338,9 +353,16 @@ El DbContext principal es:
 
 ---
 
+### Cancelar reserva
+
+```http
+PATCH /api/Reservas/{id}/cancelar
+```
+
+El dominio impide cancelar reservas completadas, ya canceladas o que comienzan dentro de las siguientes dos horas. El método `Completar()` existe en la entidad, pero todavía no se expone como endpoint HTTP.
+
 ## Próximas funcionalidades
 
-- Cancelar reservas desde la API.
 - Completar reservas.
 - Reglas de horario laboral.
 - Restricciones de cancelación.
