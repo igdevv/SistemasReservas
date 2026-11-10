@@ -231,7 +231,7 @@ Completada
 
 ## Prevención de reservas solapadas
 
-Antes de crear una reserva se verifica si existe otra que choque con el horario solicitado.
+Antes de crear una reserva se verifica si existe otra reserva activa que choque con el horario solicitado. Las reservas canceladas no bloquean el horario. Esta comprobación no sustituye una garantía transaccional contra solicitudes concurrentes.
 
 La condición utilizada es:
 
