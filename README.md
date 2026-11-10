@@ -1,14 +1,18 @@
 # Sistema de Reservas
 
-API REST desarrollada con ASP.NET Core y Onion Architecture para gestionar reservas aplicando reglas de negocio reales.
+API REST educativa desarrollada con ASP.NET Core 10 y Onion Architecture para gestionar reservas, estados y validaciones de horarios. Este repositorio demuestra separación de responsabilidades y reglas de dominio; no se presenta como un sistema listo para producción.
 
 El objetivo principal de este proyecto es practicar arquitectura de software, separación de responsabilidades y lógica de negocio más allá de un CRUD tradicional.
 
 ---
 
+## Estado actual
+
+La API implementa creación, consulta y confirmación de reservas. Comprueba solapamientos antes de guardar, pero **esa comprobación por sí sola no garantiza evitar reservas simultáneas bajo concurrencia**. Cancelación, finalización, recordatorios, trabajos en segundo plano, autenticación y protección robusta frente a dobles reservas siguen siendo mejoras pendientes.
+
 ## Objetivo del proyecto
 
-Este sistema busca manejar reservas aplicando reglas reales del negocio, como:
+El objetivo a largo plazo es manejar reservas con reglas de negocio como las siguientes (no todas están implementadas):
 
 - Evitar reservas solapadas.
 - Manejar estados de reserva.
