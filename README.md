@@ -89,7 +89,7 @@ Ejemplo:
 reserva.Confirmar();
 ```
 
-La propia entidad decide si esa operación está permitida.
+La propia entidad decide si esa operación está permitida. Las reservas deben comenzar desde las 08:00, terminar como máximo a las 18:00 y mantenerse dentro del mismo día. La validación utiliza la hora local representada por los valores `DateTime` recibidos; todavía no existe una política explícita de zonas horarias.
 
 ---
 
