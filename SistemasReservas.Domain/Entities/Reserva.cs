@@ -27,7 +27,10 @@ public class Reserva
                 "No se puede crear una reserva en el pasado.");
         }
 
-        if (fechaInicio.Hour < 8 || fechaFin.Hour > 18)
+        if (fechaInicio.TimeOfDay < TimeSpan.FromHours(8) ||
+            fechaInicio.TimeOfDay >= TimeSpan.FromHours(18) ||
+            fechaFin.TimeOfDay > TimeSpan.FromHours(18) ||
+            fechaInicio.Date != fechaFin.Date)
         {
             throw new InvalidOperationException(
                 "Las reservas solo pueden realizarse entre las 8:00 AM y las 6:00 PM.");

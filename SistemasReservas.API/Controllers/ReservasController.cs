@@ -16,7 +16,7 @@ namespace SistemasReservas.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ReservaResponse>> Get()
+        public async Task<ActionResult<List<ReservaResponse>>> Get()
         {
             var reservas = await _reservaService.ObtenerTodasAsync();
 
@@ -41,7 +41,7 @@ namespace SistemasReservas.API.Controllers
         {
             var reserva = await _reservaService.CrearReservaAsync(request);
 
-            return Ok(reserva);
+            return CreatedAtAction(nameof(GetPorId), new { id = reserva.Id }, reserva);
         }
 
         [HttpPatch("{id}/confirmar")]

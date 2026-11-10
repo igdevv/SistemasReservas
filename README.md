@@ -1,14 +1,18 @@
 # Sistema de Reservas
 
-API REST desarrollada con ASP.NET Core y Onion Architecture para gestionar reservas aplicando reglas de negocio reales.
+API REST educativa desarrollada con ASP.NET Core 10 y Onion Architecture para gestionar reservas, estados y validaciones de horarios. Este repositorio demuestra separación de responsabilidades y reglas de dominio; no se presenta como un sistema listo para producción.
 
 El objetivo principal de este proyecto es practicar arquitectura de software, separación de responsabilidades y lógica de negocio más allá de un CRUD tradicional.
 
 ---
 
+## Estado actual
+
+La API implementa creación, consulta y confirmación de reservas. Comprueba solapamientos antes de guardar, pero **esa comprobación por sí sola no garantiza evitar reservas simultáneas bajo concurrencia**. Cancelación, finalización, recordatorios, trabajos en segundo plano, autenticación y protección robusta frente a dobles reservas siguen siendo mejoras pendientes.
+
 ## Objetivo del proyecto
 
-Este sistema busca manejar reservas aplicando reglas reales del negocio, como:
+El objetivo a largo plazo es manejar reservas con reglas de negocio como las siguientes (no todas están implementadas):
 
 - Evitar reservas solapadas.
 - Manejar estados de reserva.
@@ -85,7 +89,7 @@ Ejemplo:
 reserva.Confirmar();
 ```
 
-La propia entidad decide si esa operación está permitida.
+La propia entidad decide si esa operación está permitida. Las reservas deben comenzar desde las 08:00, terminar como máximo a las 18:00 y mantenerse dentro del mismo día. La validación utiliza la hora local representada por los valores `DateTime` recibidos; todavía no existe una política explícita de zonas horarias.
 
 ---
 
@@ -227,7 +231,7 @@ Completada
 
 ## Prevención de reservas solapadas
 
-Antes de crear una reserva se verifica si existe otra que choque con el horario solicitado.
+Antes de crear una reserva se verifica si existe otra reserva activa que choque con el horario solicitado. Las reservas canceladas no bloquean el horario. Esta comprobación no sustituye una garantía transaccional contra solicitudes concurrentes.
 
 La condición utilizada es:
 
@@ -283,6 +287,19 @@ Cliente
 
 ---
 
+## Ejecución local
+
+Requiere .NET SDK 10 y SQL Server o LocalDB. Configura `ConnectionStrings__DefaultConnection` mediante variable de entorno o User Secrets, sin publicar credenciales. Desde la raíz del repositorio:
+
+```powershell
+dotnet restore SistemasReservas.slnx
+dotnet build SistemasReservas.slnx
+dotnet ef database update --project SistemasReservas.Infrastructure --startup-project SistemasReservas.API
+dotnet run --project SistemasReservas.API
+```
+
+En `Development`, abre `/swagger` en la dirección local indicada por la aplicación. Revisa las migraciones antes de aplicarlas a una base con datos. El repositorio incluye un workflow de GitHub Actions que compila la solución; todavía no contiene un proyecto de pruebas automatizadas.
+
 ## Endpoints actuales
 
 ### Crear reserva
@@ -290,6 +307,8 @@ Cliente
 ```http
 POST /api/Reservas
 ```
+
+Devuelve **201 Created** y una cabecera `Location` hacia la reserva creada.
 
 Ejemplo:
 
@@ -334,9 +353,16 @@ El DbContext principal es:
 
 ---
 
+### Cancelar reserva
+
+```http
+PATCH /api/Reservas/{id}/cancelar
+```
+
+El dominio impide cancelar reservas completadas, ya canceladas o que comienzan dentro de las siguientes dos horas. El método `Completar()` existe en la entidad, pero todavía no se expone como endpoint HTTP.
+
 ## Próximas funcionalidades
 
-- Cancelar reservas desde la API.
 - Completar reservas.
 - Reglas de horario laboral.
 - Restricciones de cancelación.

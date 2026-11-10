@@ -24,7 +24,9 @@ namespace SistemasReservas.Infrastructure.Repositories
 
         public async Task<bool> ExisteSolapamientoAsync(DateTime inicio, DateTime fin)
         {
-            return await _context.Reservas.AnyAsync(r => inicio < r.FechaFin && fin > r.FechaInicio);
+            return await _context.Reservas.AnyAsync(r =>
+                r.Estado != SistemasReservas.Domain.Enums.EstadoReserva.Cancelada &&
+                inicio < r.FechaFin && fin > r.FechaInicio);
         }
 
         public async Task<List<Reserva>> ObtenerTodasAsync()

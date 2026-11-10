@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using System.Net;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace SistemasReservas.API.Middleware;
@@ -7,10 +8,12 @@ namespace SistemasReservas.API.Middleware;
 public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public ExceptionMiddleware(RequestDelegate next)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -55,8 +58,9 @@ public class ExceptionMiddleware
                 HttpStatusCode.BadRequest,
                 ex.Message);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error inesperado al procesar {Path}", context.Request.Path);
             await EscribirError(
                 context,
                 HttpStatusCode.InternalServerError,
